@@ -178,7 +178,7 @@ check_cmd "Getting address info"
 # WRITE YOUR SOLUTION BELOW:
 SCRIPT_PUBKEY=$(echo "$ADDR_INFO" | jq -r '.scriptPubKey')
 check_cmd "Extracting key from descriptor"
-INTERNAL_KEY="$(SCRIPT_PUBKEY:4)"
+INTERNAL_KEY="${SCRIPT_PUBKEY:4}"
 
 # STUDENT TASK: Create a proper descriptor with just the key
 # WRITE YOUR SOLUTION BELOW:
