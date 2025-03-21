@@ -176,9 +176,8 @@ check_cmd "Getting address info"
 
 # STUDENT TASK: Extract the internal key (the x-only pubkey) from the descriptor
 # WRITE YOUR SOLUTION BELOW:
-SCRIPT_PUBKEY=$(echo "$ADDR_INFO" | jq -r '.scriptPubKey')
+INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.pubkey')
 check_cmd "Extracting key from descriptor"
-INTERNAL_KEY="${SCRIPT_PUBKEY:4}"
 
 # STUDENT TASK: Create a proper descriptor with just the key
 # WRITE YOUR SOLUTION BELOW:
@@ -188,14 +187,14 @@ echo "Simple descriptor: $SIMPLE_DESCRIPTOR"
 
 # STUDENT TASK: Get a proper descriptor with checksum
 # WRITE YOUR SOLUTION BELOW:
-TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "tr($INTERNAL_KEY)" | jq -r '.descriptor')
+TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "$SIMPLE_DESCRIPTOR" | jq -r '.descriptor')
 check_cmd "Descriptor generation"
 TAPROOT_DESCRIPTOR=$(trim "$TAPROOT_DESCRIPTOR")
 echo "Taproot treasure map: $TAPROOT_DESCRIPTOR"
 
 # STUDENT TASK: Derive an address from the descriptor
 # WRITE YOUR SOLUTION BELOW:
-DERIVED_ADDR_RAW=$(bitcoin-cli -regtest deriveaddresses "${TAPROOT_DESCRIPTOR}" | jq -r '.[0]')
+DERIVED_ADDR_RAW=$(bitcoin-cli -regtest deriveaddresses "$TAPROOT_DESCRIPTOR" | jq -r '.[0]')
 check_cmd "Address derivation"
 DERIVED_ADDR=$(echo "$DERIVED_ADDR_RAW" | tr -d '[:space:]')
 echo "Derived quantum vault address: $DERIVED_ADDR"
