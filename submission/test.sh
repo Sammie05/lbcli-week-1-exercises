@@ -73,7 +73,7 @@ TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "" bec
 check_cmd "Taproot address generation"
 
 echo "Your exploration addresses:"
-echo "- Legacy Time Capsule: $LEGACY_ADDR"
+echo "- treasure map: $LEGACY_ADDR"
 echo "- P2SH ancient vault: $P2SH_ADDR"
 echo "- SegWit digital safe: $SEGWIT_ADDR"
 echo "- Taproot quantum vault: $TAPROOT_ADDR"
