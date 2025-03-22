@@ -195,7 +195,6 @@ echo "Taproot treasure map: $TAPROOT_DESCRIPTOR"
 # STUDENT TASK: Derive an address from the descriptor
 # WRITE YOUR SOLUTION BELOW:
 DERIVED_ADDR_RAW=$(bitcoin-cli -regtest deriveaddresses "$TAPROOT_DESCRIPTOR" | jq -r '.[0]')
-
 check_cmd "Address derivation"
 DERIVED_ADDR=$(echo "$DERIVED_ADDR_RAW" | tr -d '[:space:]')
 echo "Derived quantum vault address: $DERIVED_ADDR"
