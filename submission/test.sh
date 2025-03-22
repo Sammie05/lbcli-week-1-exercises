@@ -172,8 +172,12 @@ check_cmd() {
 }
 
 # Ensure wallet is loaded
-bitcoin-cli -regtest loadwallet btrustwallet
-check_cmd "Loading wallet"
+if ! bitcoin-cli -regtest getwalletinfo &>/dev/null; then
+    bitcoin-cli -regtest loadwallet btrustwallet
+    check_cmd "Loading wallet"
+else
+    echo "Wallet is already loaded."
+fi
 
 # STUDENT TASK: Create a new taproot address
 # WRITE YOUR SOLUTION BELOW:
