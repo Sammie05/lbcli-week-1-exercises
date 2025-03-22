@@ -169,15 +169,14 @@ NEW_TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "t
 check_cmd "New taproot address generation"
 NEW_TAPROOT_ADDR=$(echo "$NEW_TAPROOT_ADDR" | tr -d '[:space:]')
 
+# STUDENT TASK: Get the address info to extract the internal key
+# WRITE YOUR SOLUTION BELOW:
 ADDR_INFO=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getaddressinfo "$NEW_TAPROOT_ADDR")
 check_cmd "Getting address info"
 
-# STUDENT TASK: Get the address info to extract the internal key
-# WRITE YOUR SOLUTION BELOW:
-
 # STUDENT TASK: Extract the internal key (the x-only pubkey) from the descriptor
 # WRITE YOUR SOLUTION BELOW:
-INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.scriptPubKey' | grep -oP '[0-9a-fA-F]{64}$')
+INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.scriptPubkey' | grep -oP '[0-9a-fA-F]{64}$')
 check_cmd "Extracting key from descriptor"
 
 # STUDENT TASK: Create a proper descriptor with just the key
@@ -188,6 +187,10 @@ echo "Simple descriptor: $SIMPLE_DESCRIPTOR"
 
 # STUDENT TASK: Get a proper descriptor with checksum
 # WRITE YOUR SOLUTION BELOW:
+TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "tr($INTERNAL_KEY)" | jq -r '.descriptor')
+check_cmd "Descriptor generation"
+TAPROOT_DESCRIPTOR=$(trim "$TAPROOT_DESCRIPTOR")
+echo "Taproot treasure map: $TAPROOT_DESCRIPTOR"
 
 # STUDENT TASK: Derive an address from the descriptor
 # WRITE YOUR SOLUTION BELOW:
