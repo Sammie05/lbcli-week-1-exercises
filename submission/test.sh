@@ -22,14 +22,14 @@ echo "----------------------------------------"
 echo "Create a wallet named 'btrustwallet' to track your Bitcoin exploration"
 # STUDENT TASK: Use bitcoin-cli to create a wallet named "btrustwallet"
 # WRITE YOUR SOLUTION BELOW:
-bitcoin-cli -regtest createwallet "btrustwallet"
-check_cmd "Wallet creation: btrustwallet"
+bitcoin-cli -regtest createwallet btrustwallet
+
 # Create a second wallet that will hold the treasure
 echo "Now, create another wallet called 'treasurewallet' to fund your adventure"
 # STUDENT TASK: Create another wallet called "treasurewallet"
 # WRITE YOUR SOLUTION BELOW:
-bitcoin-cli -regtest createwallet "treasurewallet"
-check_cmd "Wallet creation: treasurewallet"
+bitcoin-cli -regtest createwallet treasurewallet
+
 
 # Generate an address for mining in the treasure wallet
 # STUDENT TASK: Generate a new address in the treasurewallet
@@ -60,16 +60,16 @@ echo "The treasure hunt requires 4 different types of addresses to collect funds
 echo "Generate one of each address type (legacy, p2sh-segwit, bech32, bech32m)"
 # STUDENT TASK: Generate addresses of each type
 # WRITE YOUR SOLUTION BELOW:
-LEGACY_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "" legacy)
+LEGACY_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "legacyaddr" "legacy")
 check_cmd "Legacy address generation"
 
-P2SH_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "" p2sh-segwit)
+P2SH_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "p2shaddr" "p2sh-segwit")
 check_cmd "P2SH address generation"
 
-SEGWIT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "" bech32)
+SEGWIT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "bech32addr" "bech32")
 check_cmd "SegWit address generation"
 
-TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "" bech32m)
+TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "taprootaddr" "bech32m")
 check_cmd "Taproot address generation"
 
 echo "Your exploration addresses:"
@@ -165,9 +165,9 @@ echo "Create a descriptor for your taproot address and derive the address to ens
 
 # STUDENT TASK: Create a new taproot address
 # WRITE YOUR SOLUTION BELOW:
-NEW_TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "taproot_final" "bech32m")
+NEW_TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "newtaproot" "bech32m")
 check_cmd "New taproot address generation"
-NEW_TAPROOT_ADDR=$(echo "$NEW_TAPROOT_ADDR" | tr -d '[:space:]')
+NEW_TAPROOT_ADDR=$(trim "$NEW_TAPROOT_ADDR")
 
 # STUDENT TASK: Get the address info to extract the internal key
 # WRITE YOUR SOLUTION BELOW:
@@ -176,8 +176,9 @@ check_cmd "Getting address info"
 
 # STUDENT TASK: Extract the internal key (the x-only pubkey) from the descriptor
 # WRITE YOUR SOLUTION BELOW:
-INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.pubkey' | grep -oP '[0-9a-fA-F]{64}$')
-check_cmd "Extracting key from descriptor" 
+INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.desc | split("]")[1] | split("#")[0] | rtrimstr(")")')
+check_cmd "Extracting key from descriptor"
+INTERNAL_KEY=$(trim "$INTERNAL_KEY")
 
 # STUDENT TASK: Create a proper descriptor with just the key
 # WRITE YOUR SOLUTION BELOW:
@@ -187,16 +188,16 @@ echo "Simple descriptor: $SIMPLE_DESCRIPTOR"
 
 # STUDENT TASK: Get a proper descriptor with checksum
 # WRITE YOUR SOLUTION BELOW:
-TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "tr($INTERNAL_KEY)" | jq -r '.descriptor')
+TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "$SIMPLE_DESCRIPTOR" | jq -r '.descriptor')
 check_cmd "Descriptor generation"
 TAPROOT_DESCRIPTOR=$(trim "$TAPROOT_DESCRIPTOR")
 echo "Taproot treasure map: $TAPROOT_DESCRIPTOR"
 
 # STUDENT TASK: Derive an address from the descriptor
 # WRITE YOUR SOLUTION BELOW:
-DERIVED_ADDR_RAW=$(bitcoin-cli -regtest deriveaddresses "$TAPROOT_DESCRIPTOR" | jq -r '.[0]')
+DERIVED_ADDR_RAW=$(bitcoin-cli -regtest deriveaddresses "$TAPROOT_DESCRIPTOR")
 check_cmd "Address derivation"
-DERIVED_ADDR=$(echo "$DERIVED_ADDR_RAW" | tr -d '[:space:]')
+DERIVED_ADDR=$(echo "$DERIVED_ADDR_RAW" | tr -d '[]" \n\t')
 echo "Derived quantum vault address: $DERIVED_ADDR"
 
 # Verify the addresses match
