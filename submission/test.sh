@@ -163,6 +163,18 @@ echo "-------------------------------------"
 echo "The final treasure is locked with an address derived from a descriptor."
 echo "Create a descriptor for your taproot address and derive the address to ensure it matches."
 
+# Function to check command execution
+check_cmd() {
+    if [ $? -ne 0 ]; then
+        echo "Error: $1 failed." >&2
+        exit 1
+    fi
+}
+
+# Ensure wallet is loaded
+bitcoin-cli -regtest loadwallet btrustwallet
+check_cmd "Loading wallet"
+
 # STUDENT TASK: Create a new taproot address
 # WRITE YOUR SOLUTION BELOW:
 NEW_TAPROOT_ADDR=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getnewaddress "taproot_final" "bech32m")
@@ -170,33 +182,34 @@ check_cmd "New taproot address generation"
 NEW_TAPROOT_ADDR=$(echo "$NEW_TAPROOT_ADDR" | tr -d '[:space:]')
 
 # STUDENT TASK: Get the address info to extract the internal key
-# WRITE YOUR SOLUTION BELOW:
 ADDR_INFO=$(bitcoin-cli -regtest -rpcwallet=btrustwallet getaddressinfo "$NEW_TAPROOT_ADDR")
 check_cmd "Getting address info"
 
 # STUDENT TASK: Extract the internal key (the x-only pubkey) from the descriptor
-# WRITE YOUR SOLUTION BELOW:
-INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.scriptPubkey' | grep -oP '[0-9a-fA-F]{64}$')
+INTERNAL_KEY=$(echo "$ADDR_INFO" | jq -r '.pubkey')
 check_cmd "Extracting key from descriptor"
 
-# STUDENT TASK: Create a proper descriptor with just the key
-# WRITE YOUR SOLUTION BELOW:
 echo "Using internal key: $INTERNAL_KEY"
+if [ -z "$INTERNAL_KEY" ]; then
+    echo "Error: INTERNAL_KEY is empty!"
+    exit 1
+fi
+
+# STUDENT TASK: Create a proper descriptor with just the key
 SIMPLE_DESCRIPTOR="tr($INTERNAL_KEY)"
 echo "Simple descriptor: $SIMPLE_DESCRIPTOR"
 
 # STUDENT TASK: Get a proper descriptor with checksum
-# WRITE YOUR SOLUTION BELOW:
-TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "tr($INTERNAL_KEY)" | jq -r '.descriptor')
+TAPROOT_DESCRIPTOR=$(bitcoin-cli -regtest getdescriptorinfo "$SIMPLE_DESCRIPTOR" | jq -r '.descriptor')
 check_cmd "Descriptor generation"
-TAPROOT_DESCRIPTOR=$(trim "$TAPROOT_DESCRIPTOR")
-echo "Taproot treasure map: $TAPROOT_DESCRIPTOR"
+TAPROOT_DESCRIPTOR=$(echo "$TAPROOT_DESCRIPTOR" | tr -d '[:space:]')
+echo "TAPROOT_DESCRIPTOR: $TAPROOT_DESCRIPTOR"
 
 # STUDENT TASK: Derive an address from the descriptor
-# WRITE YOUR SOLUTION BELOW:
 DERIVED_ADDR_RAW=$(bitcoin-cli -regtest deriveaddresses "$TAPROOT_DESCRIPTOR" | jq -r '.[0]')
 check_cmd "Address derivation"
 DERIVED_ADDR=$(echo "$DERIVED_ADDR_RAW" | tr -d '[:space:]')
+
 echo "Derived quantum vault address: $DERIVED_ADDR"
 
 # Verify the addresses match
